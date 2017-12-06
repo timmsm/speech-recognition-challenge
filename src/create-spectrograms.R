@@ -1,36 +1,37 @@
-# Program: create-spectrograms.R
-# Purpose: Read all wav files from the train directory and save their corresponding
-#          spectrograms in the img directory
-
 library(seewave)
+library(tuneR)
 library(tidyverse)
 
 # Read wav files ----------------------------------------------------------
 wav_files <- list.files("data/train/audio", "wav$", full.names = TRUE, recursive = TRUE)
 
-wav_sounds <- map(wav_files, tuneR::readWave) %>% 
-  set_names(str_replace_all(wav_files, c("^data" = "img", "wav$" = "png")))
+wav_sounds <- map(wav_files, readWave)
 
 # Create destination directories ------------------------------------------
 dest_dirs <- list.dirs("data/train/audio") %>% 
-  str_replace("data", "img")
+  str_replace("train/audio", "spectrograms")
 
 for (dd in dest_dirs) {
   if (!dir.exists(dd))
     dir.create(dd, recursive = TRUE)
 }
 
-# Save spectrograms -------------------------------------------------------
+# Filter to human voice range ---------------------------------------------
+filtered_speech <- wav_sounds %>%  
+  map(bwfilter, f = 16000, from = 300, to = 3400, bandpass = TRUE, output = "Wave") %>% 
+  set_names(str_replace_all(wav_files, c("train/audio" = "spectrograms", "wav$" = "png")))
+
+# Create and save spectrogram ---------------------------------------------
 save_spectro <- function(sound, filename) {
-  png(filename, width = 4, height = 4, units = 'in', res = 300)
+  png(filename, width = 4, height = 4, units = "in", res = 300)
   spectro(
     sound, scale = FALSE, tlab = "", flab = "", axisX = FALSE, 
-    axisY = FALSE, palette = reverse.gray.colors.2, colgrid = "transparent", 
-    colaxis = FALSE, tlim = c(0, 1), flim = c(0, 6)
+    axisY = FALSE, colgrid = "transparent", 
+    colaxis = FALSE, tlim = c(0, 1), flim = c(0, 4)
   )
   graphics.off()
 }
 
 save_spectro_ <- safely(save_spectro, NULL)
 
-iwalk(wav_sounds, save_spectro_)
+iwalk(filtered_speech, save_spectro_)
