@@ -33,7 +33,12 @@ vignettes/*.pdf
 *.knit.md
 .Rproj.user
 
+<<<<<<< HEAD
 # Data
 data/*
 train/*
 validation/*
+=======
+# Data directory
+data/*
+>>>>>>> b6febe6020604c01f334ba9d04c356d20a3c5182
