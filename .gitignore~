@@ -32,8 +32,3 @@ vignettes/*.pdf
 *.utf8.md
 *.knit.md
 .Rproj.user
-
-# Data
-data/*
-train/*
-validation/*
